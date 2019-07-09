@@ -29,4 +29,4 @@ curl http://localhost:9080/tweets/consumer
 
 To be continued...
 
-[Imagem com select dos Tweets no Cassandra](tweets.png)
+![Imagem com select dos Tweets no Cassandra](tweets.png)
