@@ -1,12 +1,13 @@
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import com.datastax.driver.core.LocalDate;
 
 public class Tweet {
-    private UUID id;
+    private long id;
     private String user;
     private String message;
-    private LocalDate date;
+    private Date date;
     private String source;
     private boolean truncated;
     //    private GeoLocation geoLocation;
@@ -17,7 +18,7 @@ public class Tweet {
 
     public Tweet() {}
 
-    public Tweet(final UUID id, final String user, final String message, final LocalDate date, final String source, final boolean truncated, final double latitude, final double longitude, final boolean favorited, final List<Long> contributors) {
+    public Tweet(final long id, final String user, final String message, final Date date, final String source, final boolean truncated, final double latitude, final double longitude, final boolean favorited, final List<Long> contributors) {
         this.id = id;
         this.user = user;
         this.message = message;
@@ -30,10 +31,10 @@ public class Tweet {
         this.contributors = contributors;
     }
 
-    public UUID getId() { return id; }
+    public long getId() { return id; }
     public String getUser() { return user; }
     public String getMessage() { return message; }
-    public LocalDate getDate() { return date; }
+    public Date getDate() { return date; }
     public String getSource() { return source; }
     public boolean isTruncated() { return truncated; }
     //    public GeoLocation getGeoLocation() { return geoLocation; }
@@ -42,10 +43,12 @@ public class Tweet {
     public boolean isFavorited() { return favorited; }
     public List<Long> getContributors() { return contributors; }
 
-    public void setId(UUID id) { this.id = id; }
+    public LocalDate dateAsLocalDate() { return LocalDate.fromMillisSinceEpoch(date.getTime()); }
+
+    public void setId(long id) { this.id = id; }
     public void setUser(String user) { this.user = user; }
     public void setMessage(String message) { this.message = message; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public void setDate(Date date) { this.date = date; }
     public void setSource(String source) { this.source = source; }
     public void setTruncated(boolean truncated) { this.truncated = truncated; }
     //    public void setGeoLocation(GeoLocation geoLocation) { this.geoLocation = geoLocation; }

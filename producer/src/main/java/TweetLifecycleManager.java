@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class TweetLifecycleManager implements LifecycleManager, Serializable {
@@ -49,14 +50,22 @@ public class TweetLifecycleManager implements LifecycleManager, Serializable {
         TwitterStream twitterStream = twitterStreamFactory.getInstance();
         StatusListener listener = new StatusListener() {
             public void onStatus(Status status) {
-                Tweet t = new Tweet(UUIDs.timeBased(),
+                double latitude = 0;
+                double longitude = 0;
+
+                if(status.getGeoLocation() != null) {
+                    latitude = status.getGeoLocation().getLatitude();
+                    longitude = status.getGeoLocation().getLongitude();
+                }
+
+                Tweet t = new Tweet(status.getId(),
                                     status.getUser().getName(),
                                     status.getText(),
-                                    LocalDate.fromMillisSinceEpoch(status.getCreatedAt().getTime()),
+                                    status.getCreatedAt(),
                                     status.getSource(),
                                     status.isTruncated(),
-                                    status.getGeoLocation().getLatitude(),
-                                    status.getGeoLocation().getLongitude(),
+                                    latitude,
+                                    longitude,
                                     status.isFavorited(),
                                     Arrays.stream(status.getContributors()).boxed().collect(Collectors.toList()));
                 ProducerRecord<String, Tweet> record = new ProducerRecord<>("tweets_topic", t);

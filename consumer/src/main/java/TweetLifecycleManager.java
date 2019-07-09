@@ -6,6 +6,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.utils.UUIDs;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -16,6 +19,9 @@ public class TweetLifecycleManager implements LifecycleManager {
 
     private KafkaConsumer<String, Tweet> consumer;
     private boolean consume;
+    private Cluster cluster = null;
+    private KeyspaceRepository sr;
+    private TweetRepository tr;
 
     public TweetLifecycleManager() {
         // Criar as propriedades do consumidor
@@ -36,13 +42,33 @@ public class TweetLifecycleManager implements LifecycleManager {
     public void start() {
         consume = true;
 
+        cluster = Cluster.builder()
+                .addContactPoint("localhost")
+                .build();
+
+        Session session = cluster.connect();
+
+        ResultSet rs = session.execute("select release_version from system.local");
+        Row row = rs.one();
+        System.out.println(row.getString("release_version"));
+
+        sr = new KeyspaceRepository(session);
+        sr.createKeyspace("tweets", "SimpleStrategy", 1);
+        sr.useKeyspace("tweets");
+
+        tr = new TweetRepository(session);
+
+        tr.deleteTable("tweetsByUser");
+        tr.createTableTweetsByUser();
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while(consume) {
                     ConsumerRecords<String, Tweet> poll = consumer.poll(Duration.ofMillis(1000));
                     for (ConsumerRecord record : poll) {
-                        logger.info(record.topic() + " - " + record.partition() + " - " + record.value());
+                        tr.insertTweetByUser((Tweet) record.value());
+//                        logger.info(record.topic() + " - " + record.partition() + " - " + record.value());
                     }
                 }
             }
@@ -53,5 +79,8 @@ public class TweetLifecycleManager implements LifecycleManager {
 
     public void stop() {
         consume = false;
+        tr.deleteTable("tweetsByUser");
+        sr.deleteKeyspace("tweets");
+        if(cluster != null) cluster.close();
     }
 }

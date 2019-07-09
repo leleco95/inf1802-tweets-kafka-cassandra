@@ -3,6 +3,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public class TweetRepository {
         System.out.println("createTable ---- init");
         StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS ")
                 .append(TABLE_NAME).append("(")
-                .append("id uuid PRIMARY KEY,")
+                .append("id bigint PRIMARY KEY,")
                 .append("user text,")
                 .append("message text,")
                 .append("date date,")
@@ -44,7 +45,7 @@ public class TweetRepository {
         System.out.println("createTableTweetsByUser ---- init");
         StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS ")
                 .append(TABLE_BY_USER_NAME).append("(")
-                .append("id uuid,")
+                .append("id bigint,")
                 .append("user text,")
                 .append("message text,")
                 .append("date date,")
@@ -106,10 +107,10 @@ public class TweetRepository {
         StringBuilder sb = new StringBuilder("INSERT INTO ")
                 .append(TABLE_BY_USER_NAME).append("(id, user, message, date, source, truncated, latitude, longitude, favorited").append(contributors).append(") ")
                 .append("VALUES (").append(tweet.getId()).append(", '")
-                .append(tweet.getUser()).append("', '")
-                .append(tweet.getMessage()).append("', '")
-                .append(tweet.getDate()).append("', '")
-                .append(tweet.getSource()).append("', ")
+                .append(tweet.getUser().replace("'", "''")).append("', '")
+                .append(tweet.getMessage().replace("'", "''")).append("', '")
+                .append(tweet.dateAsLocalDate()).append("', '")
+                .append(tweet.getSource().replace("'", "''")).append("', ")
                 .append(tweet.isTruncated()).append(", ")
 //                .append(tweet.getGeoLocation().getLatitude()).append("', '")
 //                .append(tweet.getGeoLocation().getLongitude()).append("', '")
@@ -134,11 +135,11 @@ public class TweetRepository {
         List<Tweet> tweets = new ArrayList<>();
 
         for(Row r : rs) {
-            Tweet tweet = new Tweet(r.getUUID("id"), r.getString("user"), r.getString("message"), r.getDate("date"), r.getString("source"), r.getBool("truncated"), r.getDouble("latitude"), r.getDouble("longitude"), r.getBool("favorited"), r.getList("contributors", Long.class));
+            Tweet tweet = new Tweet(r.getLong("id"), r.getString("user"), r.getString("message"), new Date(r.getDate("date").getMillisSinceEpoch()), r.getString("source"), r.getBool("truncated"), r.getDouble("latitude"), r.getDouble("longitude"), r.getBool("favorited"), r.getList("contributors", Long.class));
             System.out.println("Tweet = " + tweet.getId() + ", "
                     + tweet.getUser() + ", "
                     + tweet.getMessage() + ", "
-                    + tweet.getDate() + ", "
+                    + tweet.dateAsLocalDate() + ", "
                     + tweet.getSource() + ", "
                     + tweet.isTruncated() + ", "
                     + tweet.getLatitude() + ", "
@@ -164,7 +165,7 @@ public class TweetRepository {
         List<Tweet> tweets = new ArrayList<>();
 
         for(Row r : rs) {
-            Tweet tweet = new Tweet(r.getUUID("id"), r.getString("user"), r.getString("message"), r.getDate("date"), r.getString("source"), r.getBool("truncated"), r.getDouble("latitude"), r.getDouble("longitude"), r.getBool("favorited"), r.getList("contributors", Long.class));
+            Tweet tweet = new Tweet(r.getLong("id"), r.getString("user"), r.getString("message"), new Date(r.getDate("date").getMillisSinceEpoch()), r.getString("source"), r.getBool("truncated"), r.getDouble("latitude"), r.getDouble("longitude"), r.getBool("favorited"), r.getList("contributors", Long.class));
             tweets.add(tweet);
         }
 

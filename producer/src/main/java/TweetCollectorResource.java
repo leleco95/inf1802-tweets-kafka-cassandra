@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Path("tweets/collector")
+@Path("tweets/producer")
 public class TweetCollectorResource {
      @Inject
      LifecycleManager manager;
