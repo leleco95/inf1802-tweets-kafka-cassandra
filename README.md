@@ -27,6 +27,18 @@ curl http://localhost:8080/tweets/collector
 curl http://localhost:9080/tweets/consumer
 ```
 
-To be continued...
+Com ambos rodando, é possível conferir no Cassandra se os tweets estão sendo adicionados. Para rodar o Cassandra (assumindo que o nome do container seja "cassandra-db"):
+```
+docker exec -it cassandra-db /bin/bash
+cqlsh
+```
+
+Assim, estaremos no Cassandra. Neste projeto, foi criado o keyspace "tweets" e é preenchida a tabela "tweetsByUser", então todos os valores inseridos estarão nessa tabela.
+```
+use tweets;
+select * from tweetsByUser;
+```
+
+Um exemplo de resultado é o da imagem abaixo:
 
 ![Imagem com select dos Tweets no Cassandra](tweets.png)
